@@ -14,7 +14,7 @@ interface MainPlaylistProps {
 const MainPlaylist: React.FC<MainPlaylistProps> = ({
   songs,
   currentSong,
-    onRemoveSong,
+  onRemoveSong,
   searchTerm,
   onSearchChange,
   currentPlaylist
@@ -24,7 +24,7 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
   );
 
   return (
-    <div className="flex-1 max-w-2xl flex flex-col">
+    <div className="w-full max-w-xl flex flex-col h-full">
       {/* Header de Playlist */}
       {currentPlaylist && (
         <div className="mb-4 text-center">
@@ -51,9 +51,9 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
         />
       </div>
 
-      {/* Lista de Canciones */}
+      {/* Lista de Canciones con Scroll */}
       <div className="bg-gradient-to-b from-purple-900/30 to-blue-900/30 rounded-2xl border border-cyan-400/30 backdrop-blur-sm overflow-hidden flex-1">
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto scrollbar-custom">
           {filteredSongs.map((song, index) => (
             <div
               key={song.id}
@@ -63,17 +63,17 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
                   : 'hover:border-l-4 hover:border-l-fuchsia-400'
               }`}
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
                 <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                   currentSong?.id === song.id ? 'bg-yellow-400 animate-pulse' : 'bg-cyan-400'
                 }`}></div>
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center border border-cyan-400/50 flex-shrink-0">
                   <Music className="w-5 h-5 text-cyan-300" />
                 </div>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <div className={`font-bold text-base truncate ${
                     currentSong?.id === song.id ? 'text-yellow-400' : 'text-cyan-300'
-                  }`}>
+                  }`} title={song.name}>
                     {song.name}
                   </div>
                   <div className="text-fuchsia-400 text-sm">
@@ -83,7 +83,7 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
               </div>
               <button
                 onClick={() => onRemoveSong(song)}
-                className="p-2 rounded-full bg-red-600/20 border border-red-400/50 hover:bg-red-500/40 hover:shadow-[0_0_20px_#ff0040] transition-all duration-300 flex-shrink-0"
+                className="p-2 rounded-full bg-red-600/20 border border-red-400/50 hover:bg-red-500/40 hover:shadow-[0_0_20px_#ff0040] transition-all duration-300 flex-shrink-0 ml-3"
               >
                 <Trash2 className="w-4 h-4 text-red-300" />
               </button>

@@ -21,3 +21,43 @@ body {
   height: 100vh;
   overflow: hidden;
 }
+
+#root {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Scrollbar personalizado estilo retro */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #00ffff #1a0033;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(139, 0, 139, 0.2) 0%, rgba(0, 0, 139, 0.2) 100%);
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00ffff 0%, #ff00ff 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00ffff;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ffff00 0%, #ff00ff 100%);
+  box-shadow: 0 0 15px #ffff00;
+}
+
+/* Prevenir overflow de texto largo */
+.truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}

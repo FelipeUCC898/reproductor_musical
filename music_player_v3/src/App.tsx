@@ -21,7 +21,7 @@ const App: React.FC = () => {
       name: 'Mi Biblioteca',
       songs: new DoublyLinkedList<Song>()
     };
-    
+
     // Cargar desde localStorage si existe
     const savedPlaylists = localStorage.getItem('retroMusicPlaylists');
     if (savedPlaylists) {
@@ -57,7 +57,7 @@ const App: React.FC = () => {
 
   const handleAddSongs = (files: FileList) => {
     if (!currentPlaylist) return;
-    
+
     Array.from(files).forEach((file) => {
       const song: Song = {
         id: Date.now().toString() + Math.random().toString(),
@@ -66,7 +66,7 @@ const App: React.FC = () => {
       };
       currentPlaylist.songs.append(song);
     });
-    
+
     setPlaylists([...playlists]);
   };
 
@@ -141,10 +141,10 @@ const App: React.FC = () => {
 
   const handleDeletePlaylist = (playlist: Playlist) => {
     if (playlists.length <= 1) return;
-    
+
     const updatedPlaylists = playlists.filter(p => p.id !== playlist.id);
     setPlaylists(updatedPlaylists);
-    
+
     if (currentPlaylist?.id === playlist.id) {
       setCurrentPlaylist(updatedPlaylists[0]);
       if (isPlaying) {
@@ -161,15 +161,15 @@ const App: React.FC = () => {
 
     try {
       // Solicitar permiso de micrófono
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 44100
-        } 
+        }
       });
-      
+
       // Mostrar mensaje de inicio
       alert('🎤 ¡Micrófono activado!\n\n🎵 Reproduce la canción que quieres identificar\n⏱️ Grabaremos 5 segundos de audio');
 
@@ -177,9 +177,9 @@ const App: React.FC = () => {
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
-      
+
       const audioChunks: Blob[] = [];
-      
+
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
           audioChunks.push(event.data);
@@ -189,13 +189,13 @@ const App: React.FC = () => {
       mediaRecorder.onstop = async () => {
         // Detener todas las pistas del stream para liberar el micrófono
         stream.getTracks().forEach(track => track.stop());
-        
+
         // Crear blob de audio
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
-        
+
         // Enviar evento para limpiar countdown
         window.dispatchEvent(new CustomEvent('shazamCountdown', { detail: 0 }));
-        
+
         try {
           // Llamar a la API de Shazam
           await processShazamDetection(audioBlob);
@@ -213,13 +213,13 @@ const App: React.FC = () => {
 
       // Iniciar grabación
       mediaRecorder.start();
-      
+
       // Countdown de 5 segundos
       let timeLeft = 5;
       const countdownInterval = setInterval(() => {
         window.dispatchEvent(new CustomEvent('shazamCountdown', { detail: timeLeft }));
         timeLeft--;
-        
+
         if (timeLeft < 0) {
           clearInterval(countdownInterval);
           if (mediaRecorder.state === 'recording') {
@@ -230,9 +230,9 @@ const App: React.FC = () => {
 
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      
+
       let errorMessage = '❌ Error al acceder al micrófono\n\n';
-      
+
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
           errorMessage += '🚫 Permiso denegado\n• Permite el acceso al micrófono\n• Revisa la configuración de tu navegador';
@@ -246,7 +246,7 @@ const App: React.FC = () => {
       } else {
         errorMessage += '🔧 Error desconocido, intenta de nuevo';
       }
-      
+
       alert(errorMessage);
     }
   };
@@ -290,12 +290,12 @@ const App: React.FC = () => {
 
         // Mostrar información de la canción detectada
         const confirmMessage = `🎵 ¡Canción detectada!\n\n🎤 ${artistName}\n🎵 ${songName}\n\n¿Deseas agregarla a "${currentPlaylist!.name}"?`;
-        
+
         if (window.confirm(confirmMessage)) {
           // Solo agregar si el usuario confirma
           currentPlaylist!.songs.append(detectedSong);
           setPlaylists([...playlists]);
-          
+
           alert(`✅ ¡Éxito!\n\n"${fullName}" se agregó a tu playlist`);
         }
       } else {
@@ -305,10 +305,10 @@ const App: React.FC = () => {
 
     } catch (error) {
       console.error('Error with Shazam API:', error);
-      
+
       // Manejo de errores específicos
       let errorMessage = '❌ Error al detectar la canción\n\n';
-      
+
       if (error instanceof Error) {
         if (error.message.includes('Failed to fetch')) {
           errorMessage += '🌐 Problema de conexión a internet\n• Verifica tu conexión\n• Intenta de nuevo en unos segundos';
@@ -322,7 +322,7 @@ const App: React.FC = () => {
       } else {
         errorMessage += '🔧 Error desconocido, intenta de nuevo';
       }
-      
+
       alert(errorMessage);
     }
   };
@@ -335,8 +335,8 @@ const App: React.FC = () => {
       {/* Efectos de fondo animados */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-fuchsia-500/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-fuchsia-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
       {/* Sidebar */}
@@ -365,9 +365,9 @@ const App: React.FC = () => {
         </header>
 
         {/* Área Principal */}
-        <div className="flex-1 flex gap-8 items-center justify-center min-h-0 p-8">
-          {/* Panel Izquierdo - Tocadiscos y Controles */}
-          <div className="flex flex-col items-center justify-center">
+        <div className="flex-1 flex gap-12 items-stretch justify-around min-h-0 p-8 px-12">
+          {/* Panel Centro - Tocadiscos y Controles */}
+          <div className="flex flex-col items-center justify-center flex-shrink-0 ml-16">
             {/* Tocadiscos */}
             <MainTurntable isPlaying={isPlaying} currentSong={currentSong} />
 
@@ -383,14 +383,16 @@ const App: React.FC = () => {
           </div>
 
           {/* Panel Derecho - Lista de Canciones */}
-          <MainPlaylist
-            songs={playlistSongs}
-            currentSong={currentSong}
-            onRemoveSong={handleRemoveSong}
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            currentPlaylist={currentPlaylist}
-          />
+          <div className="flex-1 flex items-center justify-end min-h-0">
+            <MainPlaylist
+              songs={playlistSongs}
+              currentSong={currentSong}
+              onRemoveSong={handleRemoveSong}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              currentPlaylist={currentPlaylist}
+            />
+          </div>
         </div>
 
         {/* Audio Element */}
