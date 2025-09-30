@@ -2,7 +2,7 @@ export class Node<T> {
   value: T;
   next: Node<T> | null;
   prev: Node<T> | null;
-  
+
   constructor(value: T) {
     this.value = value;
     this.next = null;
@@ -72,13 +72,13 @@ export class DoublyLinkedList<T> {
         if (current === this.current) {
           this.current = current.next || current.prev;
         }
-        
+
         if (current.prev) current.prev.next = current.next;
         else this.head = current.next;
-        
+
         if (current.next) current.next.prev = current.prev;
         else this.tail = current.prev;
-        
+
         this.size--;
         return true;
       }
@@ -128,4 +128,30 @@ export class DoublyLinkedList<T> {
     }
     return result;
   }
+
+  reorder(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= this.size || toIndex >= this.size) {
+      return;
+    }
+
+    // Convertir a array, reordenar y reconstruir la lista
+    const items = this.toArray();
+    const [movedItem] = items.splice(fromIndex, 1);
+    items.splice(toIndex, 0, movedItem);
+
+    // Reconstruir la lista
+    this.head = null;
+    this.tail = null;
+    this.current = null;
+    this.size = 0;
+
+    items.forEach((item, index) => {
+      this.append(item);
+      // Mantener el current en el mismo elemento
+      if (fromIndex === index) {
+        this.current = this.tail;
+      }
+    });
+  }
 }
+

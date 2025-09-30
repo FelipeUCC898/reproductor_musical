@@ -197,6 +197,13 @@ const App: React.FC = () => {
     }
   };
 
+   const handleReorderSongs = (fromIndex: number, toIndex: number) => {
+    if (!currentPlaylist) return;
+    
+    currentPlaylist.songs.reorder(fromIndex, toIndex);
+    setPlaylists([...playlists]);
+  };
+
   const handleAddSongs = (files: FileList) => {
     if (!currentPlaylist) return;
 
@@ -463,6 +470,7 @@ const App: React.FC = () => {
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
               currentPlaylist={currentPlaylist}
+              onReorderSongs={handleReorderSongs}
             />
           </div>
         </div>

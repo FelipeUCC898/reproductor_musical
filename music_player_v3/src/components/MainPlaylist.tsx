@@ -1,5 +1,5 @@
-import React from 'react';
-import { Search, Music, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Music, Trash2, GripVertical } from 'lucide-react';
 import { Song, Playlist } from '../types';
 
 interface MainPlaylistProps {
@@ -9,6 +9,7 @@ interface MainPlaylistProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   currentPlaylist: Playlist | null;
+  onReorderSongs: (fromIndex: number, toIndex: number) => void;
 }
 
 const MainPlaylist: React.FC<MainPlaylistProps> = ({
@@ -17,11 +18,52 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
   onRemoveSong,
   searchTerm,
   onSearchChange,
-  currentPlaylist
+  currentPlaylist,
+  onReorderSongs
 }) => {
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
   const filteredSongs = songs.filter(song => 
     song.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    // Agregar efecto visual
+    e.currentTarget.style.opacity = '0.5';
+  };
+
+  const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+    e.currentTarget.style.opacity = '1';
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex !== null && draggedIndex !== dropIndex) {
+      onReorderSongs(draggedIndex, dropIndex);
+    }
+    
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   return (
     <div className="w-full max-w-xl flex flex-col h-full">
@@ -51,25 +93,46 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
         />
       </div>
 
-      {/* Lista de Canciones con Scroll */}
+      {/* Lista de Canciones con Scroll y Drag & Drop */}
       <div className="bg-gradient-to-b from-purple-900/30 to-blue-900/30 rounded-2xl border border-cyan-400/30 backdrop-blur-sm overflow-hidden flex-1">
         <div className="h-full overflow-y-auto scrollbar-custom">
           {filteredSongs.map((song, index) => (
             <div
               key={song.id}
+              draggable={!searchTerm} // Solo permitir arrastrar si no hay búsqueda activa
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => handleDragOver(e, index)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, index)}
               className={`flex items-center justify-between p-4 border-b border-cyan-400/10 transition-all duration-300 hover:bg-purple-800/30 ${
                 currentSong?.id === song.id
                   ? 'bg-gradient-to-r from-fuchsia-600/20 to-cyan-600/20 border-l-4 border-l-yellow-400 shadow-[0_0_20px_#ffff00]'
                   : 'hover:border-l-4 hover:border-l-fuchsia-400'
+              } ${
+                dragOverIndex === index && draggedIndex !== index
+                  ? 'border-t-4 border-t-yellow-400'
+                  : ''
+              } ${
+                !searchTerm ? 'cursor-move' : 'cursor-default'
               }`}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0 overflow-hidden">
+                {/* Icono de arrastre */}
+                {!searchTerm && (
+                  <div className="flex-shrink-0 text-cyan-400/50 hover:text-cyan-400 transition-colors">
+                    <GripVertical className="w-4 h-4" />
+                  </div>
+                )}
+                
                 <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
                   currentSong?.id === song.id ? 'bg-yellow-400 animate-pulse' : 'bg-cyan-400'
                 }`}></div>
+                
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center border border-cyan-400/50 flex-shrink-0">
                   <Music className="w-5 h-5 text-cyan-300" />
                 </div>
+                
                 <div className="min-w-0 flex-1 overflow-hidden">
                   <div className={`font-bold text-base truncate ${
                     currentSong?.id === song.id ? 'text-yellow-400' : 'text-cyan-300'
@@ -81,6 +144,7 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
                   </div>
                 </div>
               </div>
+              
               <button
                 onClick={() => onRemoveSong(song)}
                 className="p-2 rounded-full bg-red-600/20 border border-red-400/50 hover:bg-red-500/40 hover:shadow-[0_0_20px_#ff0040] transition-all duration-300 flex-shrink-0 ml-3"
@@ -103,6 +167,13 @@ const MainPlaylist: React.FC<MainPlaylistProps> = ({
           </div>
         )}
       </div>
+
+      {/* Instrucción de uso */}
+      {!searchTerm && filteredSongs.length > 0 && (
+        <div className="text-center mt-3 text-xs text-cyan-500/70">
+          💡 Arrastra las canciones para reordenarlas
+        </div>
+      )}
     </div>
   );
 };
