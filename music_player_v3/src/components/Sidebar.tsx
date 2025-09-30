@@ -173,7 +173,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <div className="text-xs opacity-70">{playlist.songs.size} canciones</div>
                 </div>
               </button>
-              {playlists.length > 1 && (
+              {playlists.length > 1 && !playlist.isLikedPlaylist && (
                 <button
                   onClick={() => onDeletePlaylist(playlist)}
                   className="ml-2 p-2 rounded-lg bg-red-600/20 border border-red-400/50 text-red-300 opacity-0 group-hover:opacity-100 hover:bg-red-600/40 transition-all duration-300"

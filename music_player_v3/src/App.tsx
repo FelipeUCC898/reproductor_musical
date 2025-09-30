@@ -17,11 +17,19 @@ const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Inicializar con playlist por defecto
+  // Inicializar con playlist por defecto
   useEffect(() => {
     const defaultPlaylist: Playlist = {
       id: 'default',
       name: 'Mi Biblioteca',
       songs: new DoublyLinkedList<Song>()
+    };
+
+    const likedPlaylist: Playlist = {
+      id: 'liked',
+      name: '❤️ Me Gusta',
+      songs: new DoublyLinkedList<Song>(),
+      isLikedPlaylist: true
     };
 
     // Cargar desde localStorage si existe
@@ -32,17 +40,25 @@ const App: React.FC = () => {
         const playlist: Playlist = {
           id: p.id,
           name: p.name,
-          songs: new DoublyLinkedList<Song>()
+          songs: new DoublyLinkedList<Song>(),
+          isLikedPlaylist: p.isLikedPlaylist || false
         };
         p.songs.forEach((song: Song) => {
           playlist.songs.append(song);
         });
         return playlist;
       });
+
+      // Asegurar que existe la playlist de "Me Gusta"
+      const hasLikedPlaylist = loadedPlaylists.some((p: Playlist) => p.isLikedPlaylist);
+      if (!hasLikedPlaylist) {
+        loadedPlaylists.unshift(likedPlaylist);
+      }
+
       setPlaylists(loadedPlaylists);
-      setCurrentPlaylist(loadedPlaylists[0] || defaultPlaylist);
+      setCurrentPlaylist(loadedPlaylists.find((p: Playlist) => !p.isLikedPlaylist) || loadedPlaylists[0]);
     } else {
-      setPlaylists([defaultPlaylist]);
+      setPlaylists([likedPlaylist, defaultPlaylist]);
       setCurrentPlaylist(defaultPlaylist);
     }
   }, []);
@@ -52,25 +68,12 @@ const App: React.FC = () => {
     const playlistsData = playlists.map(p => ({
       id: p.id,
       name: p.name,
-      songs: p.songs.toArray()
+      songs: p.songs.toArray(),
+      isLikedPlaylist: p.isLikedPlaylist || false
     }));
     localStorage.setItem('retroMusicPlaylists', JSON.stringify(playlistsData));
   }, [playlists]);
 
-  const handleAddSongs = (files: FileList) => {
-    if (!currentPlaylist) return;
-
-    Array.from(files).forEach((file) => {
-      const song: Song = {
-        id: Date.now().toString() + Math.random().toString(),
-        name: file.name.replace(/\.[^/.]+$/, ""),
-        url: URL.createObjectURL(file)
-      };
-      currentPlaylist.songs.append(song);
-    });
-
-    setPlaylists([...playlists]);
-  };
 
   const handlePlay = () => {
     const currentSong = currentPlaylist?.songs.getCurrent();
@@ -157,6 +160,60 @@ const App: React.FC = () => {
       }
     }
   };
+
+  const handleToggleLike = (song: Song) => {
+    if (!currentPlaylist) return;
+
+    // Encontrar la playlist de "Me Gusta"
+    const likedPlaylist = playlists.find((p: Playlist) => p.isLikedPlaylist);
+    if (!likedPlaylist) return;
+
+    const currentSongInPlaylist = currentPlaylist.songs.getCurrent();
+
+    // Alternar el estado de "liked"
+    if (currentSongInPlaylist && currentSongInPlaylist.id === song.id) {
+      song.liked = !song.liked;
+
+      if (song.liked) {
+        // Agregar a "Me Gusta" si no existe
+        const likedSongs: Song[] = likedPlaylist.songs.toArray();
+        const alreadyLiked = likedSongs.some((s: Song) => s.id === song.id);
+
+        if (!alreadyLiked) {
+          likedPlaylist.songs.append({ ...song, liked: true });
+          alert(`💖 "${song.name}" agregada a Me Gusta`);
+        }
+      } else {
+        // Remover de "Me Gusta"
+        const likedSongs: Song[] = likedPlaylist.songs.toArray();
+        const songToRemove = likedSongs.find((s: Song) => s.id === song.id);
+        if (songToRemove) {
+          likedPlaylist.songs.remove(songToRemove);
+          alert(`💔 "${song.name}" removida de Me Gusta`);
+        }
+      }
+
+      setPlaylists([...playlists]);
+    }
+  };
+
+  const handleAddSongs = (files: FileList) => {
+    if (!currentPlaylist) return;
+
+    Array.from(files).forEach((file) => {
+      const song: Song = {
+        id: Date.now().toString() + Math.random().toString(),
+        name: file.name.replace(/\.[^/.]+$/, ""),
+        url: URL.createObjectURL(file)
+      };
+      currentPlaylist.songs.append(song);
+    });
+
+    setPlaylists([...playlists]);
+  };
+
+
+
 
   const handleShazamDetect = async () => {
     if (!currentPlaylist) {
@@ -392,6 +449,8 @@ const App: React.FC = () => {
                   setCurrentTime(time);
                 }
               }}
+              currentSong={currentSong}
+              onToggleLike={handleToggleLike}
             />
           </div>
 

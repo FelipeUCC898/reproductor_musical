@@ -1,5 +1,6 @@
 import React from 'react';
 import { Play, Pause, SkipForward, SkipBack, Music, Heart } from 'lucide-react';
+import { Song } from '../types';
 
 interface MainControlsProps {
   isPlaying: boolean;
@@ -11,6 +12,8 @@ interface MainControlsProps {
   currentTime: number;
   duration: number;
   onSeek: (time: number) => void;
+  currentSong: Song | null;
+  onToggleLike: (song: Song) => void;
 }
 
 const MainControls: React.FC<MainControlsProps> = ({
@@ -22,7 +25,9 @@ const MainControls: React.FC<MainControlsProps> = ({
   currentPlaylist,
   currentTime,
   duration,
-  onSeek
+  onSeek,
+  currentSong,
+  onToggleLike
 }) => {
   const formatTime = (time: number): string => {
     if (isNaN(time)) return '0:00';
@@ -40,6 +45,8 @@ const MainControls: React.FC<MainControlsProps> = ({
   };
 
   const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const isLiked = currentSong?.liked || false;
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl">
@@ -86,8 +93,16 @@ const MainControls: React.FC<MainControlsProps> = ({
           <SkipForward className="w-6 h-6 text-fuchsia-400" />
         </button>
 
-        <button className="p-4 rounded-full bg-gradient-to-r from-red-600 to-pink-600 border-2 border-pink-400 hover:border-white hover:shadow-[0_0_40px_#ff1493] transition-all duration-300 transform hover:scale-110">
-          <Heart className="w-6 h-6 text-pink-200" />
+        <button 
+          onClick={() => currentSong && onToggleLike(currentSong)}
+          disabled={!currentSong}
+          className={`p-4 rounded-full border-2 transition-all duration-300 transform hover:scale-110 ${
+            isLiked
+              ? 'bg-gradient-to-r from-pink-600 to-red-600 border-pink-400 shadow-[0_0_30px_#ff1493]'
+              : 'bg-gradient-to-r from-red-600/50 to-pink-600/50 border-pink-400/50 hover:border-white hover:shadow-[0_0_40px_#ff1493]'
+          } ${!currentSong ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          <Heart className={`w-6 h-6 ${isLiked ? 'fill-pink-200 text-pink-200' : 'text-pink-200'}`} />
         </button>
       </div>
 
