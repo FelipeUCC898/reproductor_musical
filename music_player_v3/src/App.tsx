@@ -12,6 +12,8 @@ const App: React.FC = () => {
   const [currentPlaylist, setCurrentPlaylist] = useState<Playlist | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // Inicializar con playlist por defecto
@@ -73,7 +75,10 @@ const App: React.FC = () => {
   const handlePlay = () => {
     const currentSong = currentPlaylist?.songs.getCurrent();
     if (currentSong && audioRef.current) {
-      audioRef.current.src = currentSong.url;
+      // Solo cambiar la fuente si es una canción diferente
+      if (audioRef.current.src !== currentSong.url) {
+        audioRef.current.src = currentSong.url;
+      }
       audioRef.current.play();
       setIsPlaying(true);
     }
@@ -379,6 +384,14 @@ const App: React.FC = () => {
               onNext={handleNext}
               onPrevious={handlePrevious}
               currentPlaylist={currentPlaylist}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={(time) => {
+                if (audioRef.current) {
+                  audioRef.current.currentTime = time;
+                  setCurrentTime(time);
+                }
+              }}
             />
           </div>
 
@@ -401,6 +414,8 @@ const App: React.FC = () => {
           onEnded={handleNext}
           onPause={() => setIsPlaying(false)}
           onPlay={() => setIsPlaying(true)}
+          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
         />
       </div>
     </div>
